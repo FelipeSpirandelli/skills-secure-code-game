@@ -1,4 +1,4 @@
-'''
+"""
 Welcome to Secure Code Game Season-1/Level-1!
 
 Follow the instructions below to get started:
@@ -9,25 +9,29 @@ Follow the instructions below to get started:
 4. Run hack.py and if passing then CONGRATS!
 5. If stuck then read the hint
 6. Compare your solution with solution.py
-'''
+"""
 
+import math
 from collections import namedtuple
 
-Order = namedtuple('Order', 'id, items')
-Item = namedtuple('Item', 'type, description, amount, quantity')
+Order = namedtuple("Order", "id, items")
+Item = namedtuple("Item", "type, description, amount, quantity")
+
 
 def validorder(order: Order):
-    net = 0
+    credit, debit = 0, 0
 
     for item in order.items:
-        if item.type == 'payment':
-            net += item.amount
-        elif item.type == 'product':
-            net -= item.amount * item.quantity
+        if item.type == "payment":
+            credit += item.amount
+        elif item.type == "product":
+            debit += item.amount * item.quantity
         else:
             return "Invalid item type: %s" % item.type
 
-    if net != 0:
-        return "Order ID: %s - Payment imbalance: $%0.2f" % (order.id, net)
+    if abs(credit) > 1e5 or abs(debit) > 1e5:
+        return "Total amount payable for an order exceeded"
+    if math.isclose(credit, debit) is False:
+        return "Order ID: %s - Payment imbalance: $%0.2f" % (order.id, credit - debit)
     else:
         return "Order ID: %s - Full payment received!" % order.id
