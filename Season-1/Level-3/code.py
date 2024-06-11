@@ -3,15 +3,21 @@
 # You know how to play by now, good luck!
 
 import os
+
 from flask import Flask, request
 
-### Unrelated to the exercise -- Starts here -- Please ignore
+# Unrelated to the exercise -- Starts here -- Please ignore
 app = Flask(__name__)
+
+
 @app.route("/")
 def source():
-    TaxPayer('foo', 'bar').get_tax_form_attachment(request.args["input"])
-    TaxPayer('foo', 'bar').get_prof_picture(request.args["input"])
-### Unrelated to the exercise -- Ends here -- Please ignore
+    TaxPayer("foo", "bar").get_tax_form_attachment(request.args["input"])
+    TaxPayer("foo", "bar").get_prof_picture(request.args["input"])
+
+
+# Unrelated to the exercise -- Ends here -- Please ignore
+
 
 class TaxPayer:
 
@@ -21,21 +27,25 @@ class TaxPayer:
         self.prof_picture = None
         self.tax_form_attachment = None
 
+    @staticmethod
+    def safe_path(path):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        filepath = os.path.normpath(os.path.join(base_dir, path))
+        if base_dir != os.path.commonpath([base_dir, filepath]):
+            return None
+        return filepath
+
     # returns the path of an optional profile picture that users can set
     def get_prof_picture(self, path=None):
         # setting a profile picture is optional
         if not path:
             pass
 
-        # defends against path traversal attacks
-        if path.startswith('/') or path.startswith('..'):
+        prof_picture_path = self.safe_path(path)
+        if prof_picture_path is None:
             return None
 
-        # builds path
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        prof_picture_path = os.path.normpath(os.path.join(base_dir, path))
-
-        with open(prof_picture_path, 'rb') as pic:
+        with open(prof_picture_path, "rb") as pic:
             picture = bytearray(pic.read())
 
         # assume that image is returned on screen after this
@@ -48,7 +58,11 @@ class TaxPayer:
         if not path:
             raise Exception("Error: Tax form is required for all users")
 
-        with open(path, 'rb') as form:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        if base_dir != os.path.commonpath([base_dir, path]):
+            return None
+
+        with open(path, "rb") as form:
             tax_data = bytearray(form.read())
 
         # assume that tax data is returned on screen after this
